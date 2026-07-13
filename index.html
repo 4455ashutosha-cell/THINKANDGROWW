@@ -1164,12 +1164,44 @@
         });
 
         // Contact Form
-        const contactForm = document.getElementById('contactForm');
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('Thank you for your message! We\'ll get back to you soon.');
-            contactForm.reset();
-        });
+        const contactForm = document.getElementById("contactForm");
+        const submitButton = contactForm.querySelector('button[type="submit"]');
+        contactForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = "Sending...";
+            const formData = {
+                name: document.getElementById("name").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                subject: document.getElementById("subject").value.trim(),
+                message: document.getElementById("message").value.trim()
+            };
+            try {
+                 const response = await fetch("/api/contact", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || "Unable to send message");
+                }
+                alert("Message sent successfully!");
+                contactForm.reset();
+                } catch (error) {
+                    console.error("Contact form error:", error);
+                    alert(error.message || "Message could not be sent. Please try again.");
+                 } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
+            });
+
+
+
 
         // Smooth Scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
